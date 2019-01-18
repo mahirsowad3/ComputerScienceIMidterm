@@ -1,7 +1,13 @@
 gridLength = 28
 gridWidth = 19
-#previousPlace =
-#currentPlace=
+soccerBootsPickedUp = False
+soccerBallPickedUp = False
+defender1Fought = False
+defender2Fought = False
+defender3Fought = False
+defender4Fought = False
+goalieFought = False
+goalScored = False
 
 
 class Player(object):
@@ -46,9 +52,9 @@ class GridSquare(object):
 
 # Adding all squares to grid
 gridSquareStore = []
-for i in range(gridLength):
-    for j in range(gridWidth):
-        gridSquare = GridSquare(i, j)
+for x in range(gridLength):
+    for y in range(gridWidth):
+        gridSquare = GridSquare(x, y)
         gridSquareStore.append(gridSquare)
 
 
@@ -85,50 +91,190 @@ defender1 = GridSquare(14, 15)
 defender2 = GridSquare(14, 17)
 defender3 = GridSquare(25, 12)
 defender4 = GridSquare(26, 12)
-ball = GridSquare(25, 9)
-boots = GridSquare(15, 8)
+soccerBall = GridSquare(25, 9)
+soccerBoots = GridSquare(15, 8)
 
 player = Player(13, 10)
 
 
-def gridCompare(grid):
+def gridCompare(grid, p=player):
     for i in grid:
-        if player.xPos == i.xPos and player.yPos == i.yPos:
+        if p.xPos == i.xPos and p.yPos == i.yPos:
             return True
     return False
 
 
-def locationOfPlayer():
+def locationOfPlayer(p=player):
+    num = 8
     for i in [H1, H2, H3, H4, H5, H6, H7, H8, H9, H10, H11, H12]:
-        if gridCompare(i):
-            return 0
-    if gridCompare(room1):
+        num += 1
+        if gridCompare(i, p):
+            return num
+    if gridCompare(room1, p):
         return 1
-    if gridCompare(room2):
+    if gridCompare(room2, p):
         return 2
-    if gridCompare(room3):
+    if gridCompare(room3, p):
         return 3
-    if gridCompare(room4):
+    if gridCompare(room4, p):
         return 4
-    if gridCompare(room5):
+    if gridCompare(room5, p):
         return 5
-    if gridCompare(endZone1):
+    if gridCompare(endZone1, p):
         return 6
-    if gridCompare(endZone2) and not gridCompare(goal):
+    if gridCompare(endZone2, p) and not gridCompare(goal, p):
         return 7
-    if gridCompare(goal):
+    if gridCompare(goal, p):
         return 8
     else:
-        return 9
+        return num + 1
 
 
+def locationEquals(gridSquareObj):
+    if player.xPos == gridSquareObj.xPos and player.yPos == gridSquareObj.yPos:
+        return True
+    else:
+        return False
 
-def enteredNewRoom(previousLocation, currentLocation):
-    if previousLocation != currentLocation:
+
+def verifyMove(usr_in):
+    if usr_in == 'e':
+        playerFutureState = Player(player.xPos + 1, player.yPos)
+        return locationOfPlayer(playerFutureState)
+    if usr_in == 'w':
+        playerFutureState = Player(player.xPos - 1, player.yPos)
+        return locationOfPlayer(playerFutureState)
+    if usr_in == 'n':
+        playerFutureState = Player(player.xPos, player.yPos + 1)
+        return locationOfPlayer(playerFutureState)
+    if usr_in == 's':
+        playerFutureState = Player(player.xPos, player.yPos - 1)
+        return locationOfPlayer(playerFutureState)
 
 
-def move(usr_in):
-    if locationOfPlayer() == 10:
+def getRoomInfo():
+    if locationOfPlayer() in range(8, 22):
+        print('You entered a new hallway')
+    if locationOfPlayer() == 1:
+        print('This is room 1')
+    if locationOfPlayer() == 2:
+        print('You are in room 2')
+    if locationOfPlayer() == 3:
+        print('You are in room 3')
+    if locationOfPlayer() == 4:
+        print('You are in room 4')
+    if locationOfPlayer() == 5:
+        print('You are in room 5')
+    if locationOfPlayer() == 6:
+        print('You are in end zone 1')
+    if locationOfPlayer() == 7:
+        print('You are in end zone 2')
+    if locationOfPlayer() == 8:
+        print('in goal')
+
+
+previousLocation = locationOfPlayer()
+currentLocation = locationOfPlayer()
+
+
+def movePlayer(usrIn):
+    if usrIn == 'e':
+        player.moveEast()
+    if usrIn == 'w':
+        player.moveWest()
+    if usrIn == 'n':
+        player.moveNorth()
+    if usrIn == 's':
+        player.moveSouth()
+
+
+def enteredNewRoom():
+    global previousLocation
+    global currentLocation
+    if currentLocation != previousLocation:
+        getRoomInfo()
+        previousLocation = currentLocation
+        return True
+    else:
+        return False
+
+def gameObjectsPickedUp():
+    global soccerBootsPickedUp
+    global soccerBallPickedUp
+    if locationEquals(soccerBall) and soccerBallPickedUp == False and soccerBootsPickedUp == True:
+        print('You have come across the soccer ball. You now have possession of the ball.')
+        soccerBallPickedUp = True
+    if locationEquals(soccerBall) and soccerBallPickedUp == False and soccerBootsPickedUp == False:
+        print('You have come across the soccer ball, but you can not get it because you don\'t have soccer boots.')
+    if locationEquals(soccerBoots) and soccerBootsPickedUp == False:
+        print('You have come across some soccer boots. You have now put on the soccer boots')
+        soccerBootsPickedUp = True
+
+
+def fightDefender():
+    if locationEquals(defender1) and defender1Fought == False:
+        usrIn = str(input('You have come across a defender. Do you choose to fight him? Enter \'y\' or \'n\'')).strip()
+        if usrIn == 'y':
+            return True
+        else:
+            return False
+    if locationEquals(defender2) and defender2Fought == False:
+        usrIn = str(input('You have come across a defender. Do you choose to fight him? Enter \'y\' or \'n\'')).strip()
+        if usrIn == 'y':
+            return True
+        else:
+            return False
+    if locationEquals(defender3) and defender3Fought == False:
+        usrIn = str(input('You have come across a defender. Do you choose to fight him? Enter \'y\' or \'n\'')).strip()
+        if usrIn == 'y':
+            return True
+        else:
+            return False
+    if locationEquals(defender4) and defender4Fought == False:
+        usrIn = str(input('You have come across a defender. Do you choose to fight him? Enter \'y\' or \'n\'')).strip()
+        if usrIn == 'y':
+            return True
+        else:
+            return False
+    if locationEquals(goalie) and goalieFought == False:
+        usrIn = str(input('You have come across the goalie. Do you choose to fight him? Enter \'y\' or \'n\'')).strip()
+        if usrIn == 'y':
+            return True
+        else:
+            return False
+    return True
+
+
+def move(usrIn):
+    global goalScored
+    global currentLocation
+    if verifyMove(usrIn) == 21:
         print('Oh no. You have just hit a wall. Try Again')
         return
-    if locationOfPlayer() == 0:
+    if verifyMove(usrIn) == 7 and soccerBallPickedUp == True and enteredNewRoom() == True:
+        print('You have the soccer ball. You are able to go to the Second End Zone.')
+        movePlayer(usrIn)
+        currentLocation = locationOfPlayer()
+        enteredNewRoom()
+    if verifyMove(usrIn) == 7 and soccerBallPickedUp == False and enteredNewRoom() == False:
+        print('You don\'t have the soccer ball. You are unable to go to the Second End Zone.')
+    if verifyMove(usrIn) == 8 and enteredNewRoom() == True:
+        print('You have scored the goal. You have won the game.')
+        movePlayer(usrIn)
+        goalScored = True
+    else:
+        if fightDefender():
+            movePlayer(usrIn)
+            currentLocation = locationOfPlayer()
+            enteredNewRoom()
+        else:
+            print('The defender is blocking your way. You have to fight to get past him or go around.')
+
+
+while goalScored == False:
+    print('__________________________________')
+    print("Move Options: 'n', 's', 'e', 'w'")
+    userIn = str(input('Enter a move: ')).strip()
+    print('')
+    move(userIn)
+    print('Position: (' + str(player.xPos) + ', ' + str(player.yPos) + ')')
